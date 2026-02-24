@@ -20,6 +20,12 @@ if [[ ${build_platform} != ${target_platform} ]]; then
     esac
 fi
 
+if [[ "${CONDA_BUILD_CROSS_COMPILATION:-}" != "1" || "${CROSSCOMPILING_EMULATOR:-}" != "" ]]; then
+    ctest --test-dir build --output-on-failure -j ${CPU_COUNT}
+else
+    echo "Skipping tests: cross-compiling without emulator"
+fi
+
 if [[ "${target_platform}" == "linux-"* ]]; then
     ln -s "${CC}" "${BUILD_PREFIX}/bin/cc"
     ln -s "${CXX}" "${BUILD_PREFIX}/bin/c++"
@@ -36,7 +42,12 @@ cmake -S . -B build \
     -DCMAKE_EXE_LINKER_FLAGS="${CMAKE_EXE_LINKER_FLAGS} -pthread" \
     -DCORROSION_BUILD_TESTS=ON \
     ${cargo_target_args}
+
 cmake --build build --parallel ${CPU_COUNT}
 
-ctest -V --test-dir build --parallel ${CPU_COUNT}
+# Skipping tests in case of cross-compiling without emulator
+if [[ "${CONDA_BUILD_CROSS_COMPILATION:-}" != "1" || "${CROSSCOMPILING_EMULATOR:-}" != "" ]]; then
+    ctest -V --test-dir build --parallel ${CPU_COUNT}
+fi
+
 cmake --install build
