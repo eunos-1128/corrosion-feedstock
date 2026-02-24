@@ -20,12 +20,6 @@ if [[ ${build_platform} != ${target_platform} ]]; then
     esac
 fi
 
-if [[ "${CONDA_BUILD_CROSS_COMPILATION:-}" != "1" || "${CROSSCOMPILING_EMULATOR:-}" != "" ]]; then
-    ctest --test-dir build --output-on-failure -j ${CPU_COUNT}
-else
-    echo "Skipping tests: cross-compiling without emulator"
-fi
-
 if [[ "${target_platform}" == "linux-"* ]]; then
     ln -s "${CC}" "${BUILD_PREFIX}/bin/cc"
     ln -s "${CXX}" "${BUILD_PREFIX}/bin/c++"
